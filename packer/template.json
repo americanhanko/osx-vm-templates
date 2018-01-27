@@ -330,7 +330,8 @@
       "ssh_port": 22,
       "ssh_username": "{{user `username`}}",
       "ssh_wait_timeout": "10000s",
-      "type": "parallels-pvm"
+      "type": "parallels-pvm",
+      "vm_name": "packer-parallels-pvm-{{timestamp}}"
     }
   ],
   "min_packer_version": "1.1.3",
@@ -343,7 +344,10 @@
   ],
   "provisioners": [
     {
-      "execute_command": "sudo /usr/local/bin/chef-solo --no-color -config {{.ConfigPath}} --json-attributes {{.JsonPath}} --recipe-url http://supermarket.chef.io/api/v1/cookbooks/macos/versions/latest/download?=file",
+      "cookbook_paths": [
+        "/Users/erichanko/cookbooks/macos/berks-cookbooks"
+      ],
+      "execute_command": "sudo /usr/local/bin/chef-client --local-mode --no-color --config {{.ConfigPath}} --json-attributes {{.JsonPath}}",
       "json": {
         "macos": {
           "xcode": {
@@ -352,7 +356,7 @@
         }
       },
       "run_list": [
-        "recipe[macos::keep_awake]"
+        "recipe[macos::osx_vm_templates]"
       ],
       "type": "chef-solo"
     }
@@ -373,7 +377,6 @@
     "puppet_version": "none",
     "update_system": "true",
     "username": "vagrant",
-    "vagrant_box_directory": "./out"
+    "vagrant_box_directory": "."
   }
 }
-
