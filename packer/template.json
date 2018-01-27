@@ -255,12 +255,13 @@
     {
       "boot_wait": "2s",
       "parallels_tools_flavor": "mac",
+      "parallels_tools_mode": "attach",
       "prlctl": [
         [
           "set",
           "{{.Name}}",
           "--memsize",
-          "2048"
+          "4096"
         ],
         [
           "set",
@@ -332,7 +333,7 @@
       "type": "parallels-pvm"
     }
   ],
-  "min_packer_version": "0.7.0",
+  "min_packer_version": "1.1.3",
   "post-processors": [
     {
       "compression_level": 9,
@@ -342,61 +343,18 @@
   ],
   "provisioners": [
     {
-      "command": "sleep {{user `provisioning_delay`}}",
-      "type": "shell-local"
-    },
-    {
-      "destination": "/private/tmp/set_kcpassword.py",
-      "source": "../scripts/support/set_kcpassword.py",
-      "type": "file"
-    },
-    {
-      "environment_vars": [
-        "AUTOLOGIN={{user `autologin`}}",
-        "CHEF_VERSION={{user `chef_version`}}",
-        "FACTER_VERSION={{user `facter_version`}}",
-        "HIERA_VERSION={{user `hiera_version`}}",
-        "INSTALL_VAGRANT_KEYS={{user `install_vagrant_keys`}}",
-        "NOCM={{user `nocm`}}",
-        "INSTALL_XCODE_CLI_TOOLS={{user `install_xcode_cli_tools`}}",
-        "PASSWORD={{user `password`}}",
-        "PUPPET_VERSION={{user `puppet_version`}}",
-        "PUPPET_AGENT_VERSION={{user `puppet_agent_version`}}",
-        "UPDATE_SYSTEM={{user `update_system`}}",
-        "USERNAME={{user `username`}}"
-      ],
-      "execute_command": "chmod +x {{ .Path }}; sudo {{ .Vars }} {{ .Path }}",
-      "scripts": [
-        "../scripts/vagrant.sh",
-        "../scripts/vmware.sh",
-        "../scripts/install-parallels-tools.sh",
-        "../scripts/xcode-cli-tools.sh",
-        "../scripts/chef-omnibus.sh",
-        "../scripts/puppet.sh",
-        "../scripts/add-network-interface-detection.sh",
-        "../scripts/autologin.sh",
-        "../scripts/system-update.sh",
-        "../scripts/shrink.sh"
-      ],
-      "type": "shell"
-    },
-    {
-      "execute_command": "sudo /usr/local/bin/chef-client --no-color --config {{.ConfigPath}} --json-attributes {{.JsonPath}}",
+      "execute_command": "sudo /usr/local/bin/chef-solo --no-color -config {{.ConfigPath}} --json-attributes {{.JsonPath}} --recipe-url http://supermarket.chef.io/api/v1/cookbooks/macos/versions/latest/download?=file",
       "json": {
         "macos": {
           "xcode": {
-            "version": "{{user `xcode_version`}}"
+            "version": "9.2"
           }
         }
       },
-      "knife_command": "sudo /usr/local/bin/knife {{.Args}} {{.Flags}}",
       "run_list": [
-        "{{user `run_list`}}"
+        "recipe[macos::keep_awake]"
       ],
-      "server_url": "{{user `server_url`}}",
-      "type": "chef-client",
-      "validation_client_name": "{{user `validation_client_name`}}",
-      "validation_key_path": "{{user `validation_key_path`}}"
+      "type": "chef-solo"
     }
   ],
   "variables": {

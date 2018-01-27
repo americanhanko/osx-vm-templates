@@ -1,0 +1,3 @@
+[submodule "macos-cookbook"]
+	path = macos-cookbook
+	url = git@github.com:Microsoft/macos-cookbook.git
