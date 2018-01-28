@@ -344,9 +344,9 @@
   ],
   "provisioners": [
     {
-      "type": "shell-local",
-      "command": "/opt/chefdk/bin/berks install"
-    }
+      "command": "/opt/chefdk/bin/berks install",
+      "type": "shell-local"
+    },
     {
       "cookbook_paths": [
         "./berks-cookbooks"
@@ -384,3 +384,4 @@
     "vagrant_box_directory": "."
   }
 }
+
