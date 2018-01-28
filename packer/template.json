@@ -344,8 +344,12 @@
   ],
   "provisioners": [
     {
+      "type": "shell-local",
+      "command": "/opt/chefdk/bin/berks install"
+    }
+    {
       "cookbook_paths": [
-        "/Users/erichanko/cookbooks/macos/berks-cookbooks"
+        "./berks-cookbooks"
       ],
       "execute_command": "sudo /usr/local/bin/chef-client --local-mode --no-color --config {{.ConfigPath}} --json-attributes {{.JsonPath}}",
       "json": {

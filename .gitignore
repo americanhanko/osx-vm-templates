@@ -17,3 +17,5 @@ packer/output-*
 *.vhd
 *.tar
 *.bz2
+berks-cookbooks
+Berksfile.lock
