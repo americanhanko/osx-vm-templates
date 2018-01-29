@@ -360,7 +360,7 @@
         }
       },
       "run_list": [
-        "recipe[macos::osx_vm_templates]"
+        "recipe[macos::boxcutter]"
       ],
       "type": "chef-solo"
     }
