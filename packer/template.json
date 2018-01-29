@@ -344,12 +344,12 @@
   ],
   "provisioners": [
     {
-      "command": "/opt/chefdk/bin/berks install",
+      "command": "/opt/chefdk/bin/berks vendor {{user `cookbook_path`}}",
       "type": "shell-local"
     },
     {
       "cookbook_paths": [
-        "./berks-cookbooks"
+        "{{user `cookbook_path`}}"
       ],
       "execute_command": "sudo /usr/local/bin/chef-client --local-mode --no-color --config {{.ConfigPath}} --json-attributes {{.JsonPath}}",
       "json": {
@@ -368,6 +368,7 @@
   "variables": {
     "autologin": "false",
     "chef_version": "none",
+    "cookbook_path": "./berks-cookbooks",
     "facter_version": "none",
     "hiera_version": "none",
     "install_vagrant_keys": "true",
@@ -381,7 +382,7 @@
     "puppet_version": "none",
     "update_system": "true",
     "username": "vagrant",
-    "vagrant_box_directory": "."
+    "vagrant_box_directory": "./out"
   }
 }
 
