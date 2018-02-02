@@ -1,4 +1,4 @@
 source 'https://supermarket.chef.io'
 
-cookbook 'macos', github: "Microsoft/macos-cookbook", branch: "feature/boxcutter"
+cookbook 'macos', github: "Microsoft/macos-cookbook", branch: "feature/power-management"
 cookbook 'homebrew', '~> 4.0'
