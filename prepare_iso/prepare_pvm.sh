@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 usage() {
   cat <<EOF
@@ -11,29 +11,35 @@ Creates and exports a Parallels virtual machine (PVM) from a virtual disk image
 EOF
 }
 
+green='\033[0;32m'
+red='\033[0;31m'
+none='\033[0m'
+
 cleanup() {
-  if [ -n "$VM" ] && prlctl list --all | grep -q "$VM"; then
-    prlctl unregister "$VM"
-  fi
+    if [ -n "$VM" ] && prlctl list --all | grep -q "$VM"; then
+        prlctl unregister "$VM" || echo > /dev/null
+    fi
 }
 
 # trap cleanup EXIT INT TERM
 
 msg_status() {
-  echo "\\033[0;32m-- $1\\033[0m"
+    echo -e "$green-- $1"
+    echo -ne "$none"
 }
 
 msg_error() {
-  echo "\\033[0;31m-- $1\\033[0m"
+    echo -e "$red-- $1"
+    echo -ne "$none"
 }
 
 render_template() {
-  eval "echo \"$(cat "$1")\""
+    eval "echo \"$(cat "$1")\""
 }
 
 if [ ! -f "$1" ]; then
-  usage
-  exit 1
+    usage
+    exit 1
 fi
 
 HARDDRIVE="$1"
@@ -53,9 +59,6 @@ msg_status "Converting VHD to Parallels format"
 prl_convert "$HARDDRIVE" --dst="$OUTPUT" --allow-no-os
 mv "$CONVERTED_HDD" "$PARALLELS_HDD"
 
-msg_status "Compacting $PARALLELS_HDD"
-prl_disk_tool compact --hdd "$PARALLELS_HDD"
-
 msg_status "Adding SATA Controller and attaching Parallels HDD"
 prlctl set "$VM" --device-add hdd --image "$PARALLELS_HDD" --iface sata --position 0
 
@@ -70,9 +73,6 @@ prlctl set "$VM" --auto-share-camera "off"
 prlctl set "$VM" --auto-share-bluetooth "off"
 prlctl set "$VM" --on-window-close "keep-running"
 prlctl set "$VM" --shf-host "off"
-
-#msg_status "Installing Parallels tools"
-#prlctl installtools "$VM"
 
 cleanup
 
