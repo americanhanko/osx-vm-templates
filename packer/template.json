@@ -366,22 +366,13 @@
     }
   ],
   "variables": {
-    "autologin": "false",
-    "chef_version": "none",
     "cookbook_path": "./berks-cookbooks",
-    "facter_version": "none",
-    "hiera_version": "none",
-    "install_vagrant_keys": "true",
-    "install_xcode_cli_tools": "true",
     "iso_checksum": "none",
     "iso_checksum_type": "none",
     "iso_url": "none",
     "password": "vagrant",
-    "provisioning_delay": "0",
-    "puppet_agent_version": "none",
-    "puppet_version": "none",
-    "update_system": "true",
     "username": "vagrant",
     "vagrant_box_directory": "./out"
   }
 }
+
