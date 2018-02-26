@@ -1,9 +1,9 @@
 #!/bin/sh -e
 #
 # Preparation script for an OS X automated installation for use with VeeWee/Packer/Vagrant
-# 
+#
 # What the script does, in more detail:
-# 
+#
 # 1. Mounts the InstallESD.dmg using a shadow file, so the original DMG is left
 #    unchanged.
 # 2. Modifies the BaseSystem.dmg within in order to add an additional 'rc.cdrom.local'
@@ -33,35 +33,36 @@ usage() {
 Usage:
 $(basename "$0") [-upiD] "/path/to/InstallESD.dmg" /path/to/output/directory
 $(basename "$0") [-upiD] "/path/to/Install OS X [Name].app" /path/to/output/directory
+$(basename "$0") [-upiD] "/path/to/Install macOS [Name].app" /path/to/output/directory
 
 Description:
-Converts an OS X installer to a new image that contains components
+Converts an OS X/macOS installer to a new image that contains components
 used to perform an automated installation. The new image will be named
 'OSX_InstallESD_[osversion].dmg.'
 
 Optional switches:
-  -u <user>
-    Sets the username of the root user, defaults to 'vagrant'.
+	-u <user>
+		Sets the username of the root user, defaults to 'vagrant'.
 
-  -p <password>
-    Sets the password of the root user, defaults to 'vagrant'.
+	-p <password>
+		Sets the password of the root user, defaults to 'vagrant'.
 
-  -i <path to image>
-    Sets the path of the avatar image for the root user, defaulting to the vagrant icon.
+	-i <path to image>
+		Sets the path of the avatar image for the root user, defaulting to the vagrant icon.
 
-  -D <flag>
-    Sets the specified flag. Valid flags are:
-      DISABLE_REMOTE_MANAGEMENT
-      DISABLE_SCREEN_SHARING
-      DISABLE_SIP
+	-D <flag>
+		Sets the specified flag. Valid flags are:
+			DISABLE_REMOTE_MANAGEMENT
+			DISABLE_SCREEN_SHARING
+			DISABLE_SIP
 
 EOF
 }
 
 cleanup() {
-    hdiutil detach -quiet -force "$MNT_ESD" || echo > /dev/null
-    hdiutil detach -quiet -force "$MNT_BASE_SYSTEM" || echo > /dev/null
-    rm -rf "$MNT_ESD" "$MNT_BASE_SYSTEM" "$BASE_SYSTEM_DMG_RW" "$SHADOW_FILE"
+	hdiutil detach -quiet -force "$MNT_ESD" || echo > /dev/null
+	hdiutil detach -quiet -force "$MNT_BASE_SYSTEM" || echo > /dev/null
+	rm -rf "$MNT_ESD" "$MNT_BASE_SYSTEM" "$BASE_SYSTEM_DMG_RW" "$SHADOW_FILE"
 }
 
 trap cleanup EXIT INT TERM
@@ -97,30 +98,30 @@ DISABLE_SCREEN_SHARING=0
 DISABLE_SIP=0
 
 while getopts u:p:i:D: OPT; do
-  case "$OPT" in
-    u)
-      USER="$OPTARG"
-      ;;
-    p)
-      PASSWORD="$OPTARG"
-      ;;
-    i)
-      IMAGE_PATH="$OPTARG"
-      ;;
-    D)
-      if [ x${!OPTARG} = x0 ]; then
-        eval $OPTARG=1
-      elif [ x${!OPTARG} != x1 ]; then
-        msg_error "Unknown flag: ${OPTARG}"
-        usage
-        exit 1
-      fi
-      ;;
-    \?)
-      usage
-      exit 1
-      ;;
-  esac
+	case "$OPT" in
+		u)
+			USER="$OPTARG"
+			;;
+		p)
+			PASSWORD="$OPTARG"
+			;;
+		i)
+			IMAGE_PATH="$OPTARG"
+			;;
+		D)
+			if [ x${!OPTARG} = x0 ]; then
+				eval $OPTARG=1
+			elif [ x${!OPTARG} != x1 ]; then
+				msg_error "Unknown flag: ${OPTARG}"
+				usage
+				exit 1
+			fi
+			;;
+		\?)
+			usage
+			exit 1
+			;;
+	esac
 done
 
 # Remove the switches we parsed above.
@@ -131,18 +132,19 @@ if [ $(id -u) -ne 0 ]; then
 	exit 1
 fi
 
-ESD="$1"
-if [ ! -e "$ESD" ]; then
-	msg_error "Input installer image $ESD could not be found! Exiting.."
+SOURCE="$1"
+if [ ! -e "$SOURCE" ]; then
+	msg_error "Input installer image $SOURCE could not be found! Exiting.."
 	exit 1
 fi
 
-if [ -d "$ESD" ]; then
+if [ -d "$SOURCE" ]; then
 	# we might be an install .app
-	if [ -e "$ESD/Contents/SharedSupport/InstallESD.dmg" ]; then
-		ESD="$ESD/Contents/SharedSupport/InstallESD.dmg"
+	if [ -e "$SOURCE/Contents/SharedSupport/InstallESD.dmg" ]; then
+		SHARED_SUPPORT="$SOURCE/Contents/SharedSupport"
+		ESD="$SHARED_SUPPORT/InstallESD.dmg"
 	else
-		msg_error "Can't locate an InstallESD.dmg in this source location $ESD!"
+		msg_error "Can't locate an InstallESD.dmg in this source location $SOURCE!"
 	fi
 fi
 
@@ -152,10 +154,10 @@ VEEWEE_GID=$(/usr/bin/stat -f %g "$VEEWEE_DIR")
 DEFINITION_DIR="$(cd "$SCRIPT_DIR/.."; pwd)"
 
 if [ "$2" = "" ]; then
-    msg_error "Currently an explicit output directory is required as the second argument."
+	msg_error "Currently an explicit output directory is required as the second argument."
 	exit 1
 	# The rest is left over from the old prepare_veewee_iso.sh script. Not sure if we
-    # should leave in this functionality to automatically locate the veewee directory.
+	# should leave in this functionality to automatically locate the veewee directory.
 	DEFAULT_ISO_DIR=1
 	OLDPWD=$(pwd)
 	cd "$SCRIPT_DIR"
@@ -184,7 +186,7 @@ MNT_ESD=$(/usr/bin/mktemp -d /tmp/veewee-osx-esd.XXXX)
 SHADOW_FILE=$(/usr/bin/mktemp /tmp/veewee-osx-shadow.XXXX)
 rm "$SHADOW_FILE"
 msg_status "Attaching input OS X installer image with shadow file.."
-hdiutil attach "$ESD" -mountpoint "$MNT_ESD" -shadow "$SHADOW_FILE" -nobrowse -owners on 
+hdiutil attach "$ESD" -mountpoint "$MNT_ESD" -shadow "$SHADOW_FILE" -nobrowse -owners on
 if [ $? -ne 0 ]; then
 	[ ! -e "$ESD" ] && msg_error "Could not find $ESD in $(pwd)"
 	msg_error "Could not mount $ESD on $MNT_ESD"
@@ -192,9 +194,17 @@ if [ $? -ne 0 ]; then
 fi
 
 msg_status "Mounting BaseSystem.."
-BASE_SYSTEM_DMG="$MNT_ESD/BaseSystem.dmg"
+if [ -e "$SHARED_SUPPORT/BaseSystem.dmg" ]; then
+	BASE_SYSTEM_DMG="$SHARED_SUPPORT/BaseSystem.dmg"
+	CHUNKLIST="$SHARED_SUPPORT/BaseSystem.chunklist"
+elif [ -e "$MNT_ESD/BaseSystem.dmg" ]; then
+	BASE_SYSTEM_DMG="$MNT_ESD/BaseSystem.dmg"
+	CHUNKLIST="$MNT_ESD/BaseSystem.chunklist"
+else
+	msg_error "Could not find BaseSystem.dmg.\n We looked in $MNT_ESD and $1"
+fi
+
 MNT_BASE_SYSTEM=$(/usr/bin/mktemp -d /tmp/veewee-osx-basesystem.XXXX)
-[ ! -e "$BASE_SYSTEM_DMG" ] && msg_error "Could not find BaseSystem.dmg in $MNT_ESD"
 hdiutil attach "$BASE_SYSTEM_DMG" -mountpoint "$MNT_BASE_SYSTEM" -nobrowse -owners on
 if [ $? -ne 0 ]; then
 	msg_error "Could not mount $BASE_SYSTEM_DMG on $MNT_BASE_SYSTEM"
@@ -219,8 +229,8 @@ fi
 msg_status "Making firstboot installer pkg.."
 create_firstboot_pkg
 if [ -z "$BUILT_PKG" ] || [ ! -e "$BUILT_PKG" ]; then
-  msg_error "Failed building the firstboot installer pkg, exiting.."
-  exit 1
+	msg_error "Failed building the firstboot installer pkg, exiting.."
+	exit 1
 fi
 
 # We'd previously mounted this to check versions
@@ -243,11 +253,11 @@ asr restore --source "$BASE_SYSTEM_DMG" --target "$MNT_BASE_SYSTEM" --noprompt -
 rm -r "$MNT_BASE_SYSTEM"
 
 if [ $DMG_OS_VERS_MAJOR -ge 9 ]; then
-    MNT_BASE_SYSTEM="/Volumes/OS X Base System"
-    BASESYSTEM_OUTPUT_IMAGE="$OUTPUT_DMG"
-    PACKAGES_DIR="$MNT_BASE_SYSTEM/System/Installation/Packages"
+	MNT_BASE_SYSTEM="/Volumes/OS X Base System"
+	BASESYSTEM_OUTPUT_IMAGE="$OUTPUT_DMG"
+	PACKAGES_DIR="$MNT_BASE_SYSTEM/System/Installation/Packages"
 
-    rm "$PACKAGES_DIR"
+	rm "$PACKAGES_DIR"
 	msg_status "Moving 'Packages' directory from the ESD to BaseSystem.."
 	mv -v "$MNT_ESD/Packages" "$MNT_BASE_SYSTEM/System/Installation/"
 
@@ -255,12 +265,12 @@ if [ $DMG_OS_VERS_MAJOR -ge 9 ]; then
 	# installer corrupt if this isn't included, because it cannot verify BaseSystem's
 	# consistency and perform a recovery partition verification
 	msg_status "Copying in original BaseSystem dmg and chunklist.."
-	cp "$MNT_ESD/BaseSystem.dmg" "$MNT_BASE_SYSTEM/"
-	cp "$MNT_ESD/BaseSystem.chunklist" "$MNT_BASE_SYSTEM/"
+	cp "$BASE_SYSTEM_DMG" "$MNT_BASE_SYSTEM/"
+	cp "$CHUNKLIST" "$MNT_BASE_SYSTEM/"
 else
-    MNT_BASE_SYSTEM="/Volumes/Mac OS X Base System"
-    BASESYSTEM_OUTPUT_IMAGE="$MNT_ESD/BaseSystem.dmg"
-    rm "$BASESYSTEM_OUTPUT_IMAGE"
+	MNT_BASE_SYSTEM="/Volumes/Mac OS X Base System"
+	BASESYSTEM_OUTPUT_IMAGE="$BASE_SYSTEM_DMG"
+	rm "$BASESYSTEM_OUTPUT_IMAGE"
 	PACKAGES_DIR="$MNT_ESD/Packages"
 fi
 
@@ -269,7 +279,7 @@ CDROM_LOCAL="$MNT_BASE_SYSTEM/private/etc/rc.cdrom.local"
 cat > $CDROM_LOCAL << EOF
 diskutil eraseDisk jhfs+ "Macintosh HD" GPTFormat disk0
 if [ "\$?" == "1" ]; then
-    diskutil eraseDisk jhfs+ "Macintosh HD" GPTFormat disk1
+		diskutil eraseDisk jhfs+ "Macintosh HD" GPTFormat disk1
 fi
 EOF
 chmod a+x "$CDROM_LOCAL"
@@ -284,7 +294,7 @@ hdiutil detach "$MNT_BASE_SYSTEM"
 
 if [ $DMG_OS_VERS_MAJOR -lt 9 ]; then
 	msg_status "Pre-Mavericks we save back the modified BaseSystem to the root of the ESD."
-	hdiutil convert -format UDZO -o "$MNT_ESD/BaseSystem.dmg" "$BASE_SYSTEM_DMG_RW"
+	hdiutil convert -format UDZO -o $BASE_SYSTEM_DMG "$BASE_SYSTEM_DMG_RW"
 fi
 
 msg_status "Unmounting ESD.."
