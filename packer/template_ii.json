@@ -4,9 +4,9 @@
       "boot_wait": "5s",
       "disk_size": 40960,
       "guest_os_type": "macosx",
-      "iso_checksum": "{{user `iso_checksum`}}",
-      "iso_checksum_type": "{{user `iso_checksum_type`}}",
-      "iso_url": "{{user `iso_url`}}",
+      "iso_checksum": "7227850790dc4665dc90c02ed673757d",
+      "iso_checksum_type": "md5",
+      "iso_url": "/Users/erichanko/NetInstall.dmg",
       "parallels_tools_flavor": "mac",
       "prlctl": [
         [
@@ -70,10 +70,9 @@
           "off"
         ]
       ],
-      "shutdown_command": "echo '{{user `username`}}' | sudo -S shutdown -h now",
-      "ssh_password": "{{user `password`}}",
+      "shutdown_command": "shutdown -h now",
       "ssh_port": 22,
-      "ssh_username": "{{user `username`}}",
+      "ssh_username": "root",
       "ssh_wait_timeout": "10000s",
       "type": "parallels-iso"
     }
