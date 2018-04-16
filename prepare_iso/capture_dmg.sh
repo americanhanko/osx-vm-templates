@@ -19,12 +19,15 @@ exit_with_error(){
   exit 1
 }
 
-DISK_DEV="$1"
+INPUT_DMG="$1"
+MOUNTOUTPUT=$(hdiutil attach "$INPUT_DMG" -nobrowse -owners on)
+DISK_DEV=$(grep GUID_partition_scheme <<< "$MOUNTOUTPUT" | cut -f1 | tr -d '[:space:]')
 OUT_DIR="$2"
-VHD_NAME="${OUT_DIR%.vhd}"
+VHD_NAME="${INPUT_DMG%.dmg}.vhd"
+OUTPUT_VHD="$OUT_DIR/$VHD_NAME"
 
-if [ -z "$DISK_DEV" ]; then
-  exit_with_error "An explicit device is required as the first argument. (e.g. /dev/disk2)"
+if [ -z "$INPUT_DMG" ]; then
+  exit_with_error "A dmg is required as the first argument."
 elif [ -z "$OUT_DIR" ]; then
   exit_with_error "Currently an explicit output directory is required as the second argument."
 elif [ ! -d "$OUT_DIR" ]; then
@@ -32,10 +35,10 @@ elif [ ! -d "$OUT_DIR" ]; then
   mkdir -p "$OUT_DIR"
 fi
 
-if [ -z "$OUTPUT_DMG" ]; then
-  OUTPUT_DMG="$OUT_DIR/$VHD_NAME"
-elif [ -e "$OUTPUT_DMG" ]; then
-  exit_with_error "Output file $OUTPUT_DMG already exists! We're not going to overwrite it, exiting.."
+if [ -z "$OUTPUT_VHD" ]; then
+  OUTPUT_VHD="$OUT_DIR/$VHD_NAME"
+elif [ -e "$OUTPUT_VHD" ]; then
+  exit_with_error "Output file $OUTPUT_VHD already exists! We're not going to overwrite it, exiting.."
 fi
 
 DISK_SIZE_GB=32
@@ -45,5 +48,6 @@ if [ ! -e "$DISK_DEV" ]; then
   exit_with_error "Failed to find the device file of the image"
 fi
 
-msg_status "Exporting from $DISK_DEV to $OUTPUT_DMG"
-VBoxManage convertfromraw stdin "$OUTPUT_DMG" "$DISK_SIZE_BYTES" < "$DISK_DEV" --format VHD
+msg_status "Exporting from $DISK_DEV to $OUTPUT_VHD"
+diskutil unmount "$DISK_DEV"
+VBoxManage convertfromraw stdin "$OUTPUT_VHD" "$DISK_SIZE_BYTES" < "$DISK_DEV" --format VHD
